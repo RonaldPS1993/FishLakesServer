@@ -6,10 +6,7 @@ const hash = (value) => {
   return myCrypto.createHash(algorithm).update(value).digest("hex");
 };
 
-const validateKey = async (req) => {
-  const { body: data } = req;
-
-  const { apiKey } = data;
+const validateKey = async (apiKey) => {
 
   if (apiKey == undefined) {
     return false;

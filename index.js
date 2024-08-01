@@ -20,8 +20,8 @@ const createDeveloperLimiter = rateLimit({
 });
 
 //MODELS
-const Impression = require("./models/Impression")
-const Lake = require("./models/Lake")
+const Impression = require("./models/Impression");
+const Lake = require("./models/Lake");
 
 //Middleware
 const validateDeveloperBody = require("./middleware/validateDeveloperBody");
@@ -39,6 +39,78 @@ app.post(
   validateDeveloperBody,
   postDeveloper
 );
+
+app.post("/lakes", async (req, res) => {
+  let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
+  const validation = await validateApiKey(apiKey);
+  if (validation) {
+    try {
+      const data = req.body;
+      let payload = {};
+      if (data.name != undefined) {
+        Object.assign(payload, { name: data.name });
+      }
+      if (data.latitude != undefined) {
+        Object.assign(payload, { latitude: data.latitude });
+      }
+      if (data.longitude != undefined) {
+        Object.assign(payload, { longitude: data.longitude });
+      }
+      if (data.shore_fishing != undefined) {
+        Object.assign(payload, { shore_fishing: data.shore_fishing });
+      }
+      const newLake = new Lake(payload);
+      const mongoRes = await newLake.save();
+      if (mongoRes != null) {
+        res.json({
+          code: 200,
+          status: "Success",
+          body: mongoRes,
+        });
+      }
+    } catch (err) {
+      res.json({
+        code: 402,
+        status: "Error",
+        message: err.message,
+      });
+    }
+  } else {
+    res.json({
+      code: 401,
+      status: "Error",
+      message: "Unauthorized",
+    });
+  }
+});
+
+app.get("/lakes", async (req, res) => {
+  let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
+  const validation = await validateApiKey(apiKey);
+  if (validation) {
+    try {
+      if (mongoRes != null) {
+        res.json({
+          code: 200,
+          status: "Success",
+          body: mongoRes,
+        });
+      }
+    } catch (err) {
+      res.json({
+        code: 402,
+        status: "Error",
+        message: err.message,
+      });
+    }
+  } else {
+    res.json({
+      code: 401,
+      status: "Error",
+      message: "Unauthorized",
+    });
+  }
+});
 
 mongoose.connection.once("open", () => {
   console.log("Connected to mongodb");
