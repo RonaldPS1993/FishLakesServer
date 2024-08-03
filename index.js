@@ -89,13 +89,18 @@ app.get("/lakes", async (req, res) => {
   const validation = await validateApiKey(apiKey);
   if (validation) {
     try {
-      if (mongoRes != null) {
-        res.json({
-          code: 200,
-          status: "Success",
-          body: mongoRes,
-        });
-      }
+      const query = req.query;
+      const latitude = parseFloat(query.latitude);
+      const longitude = parseFloat(query.longitude);
+      const mongoRes = await Lake.findOne({
+        latitude: latitude,
+        longitude: longitude,
+      });
+      res.json({
+        code: 200,
+        status: "Success",
+        body: mongoRes.toJSON(),
+      });
     } catch (err) {
       res.json({
         code: 402,
