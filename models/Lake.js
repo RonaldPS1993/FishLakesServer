@@ -8,11 +8,11 @@ const lakeSchema = new Schema({
     default: "",
   },
   latitude: {
-    type: Schema.Types.Decimal128,
+    type: Number,
     required: true,
   },
   longitude: {
-    type: Schema.Types.Decimal128,
+    type: Number,
     required: true,
   },
   shore_fishing: {

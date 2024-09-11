@@ -96,11 +96,21 @@ app.get("/lakes", async (req, res) => {
         latitude: latitude,
         longitude: longitude,
       });
-      res.json({
-        code: 200,
-        status: "Success",
-        body: mongoRes.toJSON(),
-      });
+      console.log(mongoRes);
+      if(mongoRes != null){
+        res.json({
+          code: 200,
+          status: "Success",
+          body: mongoRes.toJSON(),
+        });
+      }
+      else {
+        res.json({
+          code: 401,
+          status: "Error",
+          body: "Lake not found"
+        })
+      }
     } catch (err) {
       res.json({
         code: 402,
@@ -116,6 +126,56 @@ app.get("/lakes", async (req, res) => {
     });
   }
 });
+
+app.patch("/lakes/:id", async (req, res) => {
+  let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
+  const validation = await validateApiKey(apiKey);
+  if (validation) {
+    try {
+      const lakeId = req.params.id
+      const data = req.body;
+      let payload = {};
+      if (data.name != undefined) {
+        Object.assign(payload, { name: data.name });
+      }
+      if (data.latitude != undefined) {
+        Object.assign(payload, { latitude: data.latitude });
+      }
+      if (data.longitude != undefined) {
+        Object.assign(payload, { longitude: data.longitude });
+      }
+      if (data.shore_fishing != undefined) {
+        Object.assign(payload, { shore_fishing: data.shore_fishing });
+      }
+      const lakeUpdate = await Lake.findOneAndUpdate({_id: lakeId}, payload)
+      if(lakeUpdate != null){
+        res.json({
+          code: 200,
+          status: "Success"
+        })
+      }
+      else {
+        res.json({
+          code: 401,
+          status: "Error",
+          body: "Lake not found"
+        })
+      }
+    } catch(err) {
+      res.json({
+        code: 402,
+        status: "Error",
+        message: err.message,
+      });
+    }
+  } else {
+    res.json({
+      code: 400,
+      status: "Error",
+      body: "Api Key is not valid"
+    })
+  }
+})
 
 mongoose.connection.once("open", () => {
   console.log("Connected to mongodb");
