@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const impressionSchema = new Schema({
+const repliesSchema = new Schema({
   body: {
     type: String,
     required: true,
@@ -11,7 +11,7 @@ const impressionSchema = new Schema({
     type: String,
     required: true,
   },
-  replies: {
+  tag: {
     type: Array,
     default: [],
   },
@@ -21,4 +21,4 @@ const impressionSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Impression", impressionSchema);
+module.exports = mongoose.model("Reply", repliesSchema);

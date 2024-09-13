@@ -97,19 +97,18 @@ app.get("/lakes", async (req, res) => {
         longitude: longitude,
       });
       console.log(mongoRes);
-      if(mongoRes != null){
+      if (mongoRes != null) {
         res.json({
           code: 200,
           status: "Success",
           body: mongoRes.toJSON(),
         });
-      }
-      else {
+      } else {
         res.json({
           code: 401,
           status: "Error",
-          body: "Lake not found"
-        })
+          body: "Lake not found",
+        });
       }
     } catch (err) {
       res.json({
@@ -132,7 +131,7 @@ app.patch("/lakes/:id", async (req, res) => {
   const validation = await validateApiKey(apiKey);
   if (validation) {
     try {
-      const lakeId = req.params.id
+      const lakeId = req.params.id;
       const data = req.body;
       let payload = {};
       if (data.name != undefined) {
@@ -147,21 +146,20 @@ app.patch("/lakes/:id", async (req, res) => {
       if (data.shore_fishing != undefined) {
         Object.assign(payload, { shore_fishing: data.shore_fishing });
       }
-      const lakeUpdate = await Lake.findOneAndUpdate({_id: lakeId}, payload)
-      if(lakeUpdate != null){
+      const lakeUpdate = await Lake.findOneAndUpdate({ _id: lakeId }, payload);
+      if (lakeUpdate != null) {
         res.json({
           code: 200,
-          status: "Success"
-        })
-      }
-      else {
+          status: "Success",
+        });
+      } else {
         res.json({
           code: 401,
           status: "Error",
-          body: "Lake not found"
-        })
+          body: "Lake not found",
+        });
       }
-    } catch(err) {
+    } catch (err) {
       res.json({
         code: 402,
         status: "Error",
@@ -172,10 +170,10 @@ app.patch("/lakes/:id", async (req, res) => {
     res.json({
       code: 400,
       status: "Error",
-      body: "Api Key is not valid"
-    })
+      body: "Api Key is not valid",
+    });
   }
-})
+});
 
 mongoose.connection.once("open", () => {
   console.log("Connected to mongodb");
