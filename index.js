@@ -280,22 +280,32 @@ app.get("/impressions", async (req, res) => {
   if (validation) {
     try {
       const query = req.query;
-      const lakeId = parseFloat(query.lake);
-      const mongoRes = await Lake.findOne({
-        id: lakeId,
-      });
-      console.log(mongoRes);
-      if (mongoRes != null) {
-        res.json({
-          code: 200,
-          status: "Success",
-          body: mongoRes.toJSON(),
+      const lakeId = query.lake;
+      const lakeData = await Lake.findById(lakeId);
+      if (lakeData != null) {
+        const impressions = await Impression.find({
+          _id: { $in: lakeData.impressions },
+        }).sort({
+          date: "desc",
         });
+        if (impressions != null) {
+          res.json({
+            code: 200,
+            status: "Success",
+            body: impressions,
+          });
+        } else {
+          res.json({
+            code: 401,
+            status: "Error",
+            body: "Impressions not found",
+          });
+        }
       } else {
         res.json({
           code: 401,
           status: "Error",
-          body: "Impression not found",
+          body: "Impressions not found",
         });
       }
     } catch (err) {
