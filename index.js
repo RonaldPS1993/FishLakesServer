@@ -1,5 +1,6 @@
 const express = require("express");
 require("dotenv").config();
+const moment = require("moment");
 
 //Setting up middleware
 const app = express();
@@ -171,6 +172,144 @@ app.patch("/lakes/:id", async (req, res) => {
       code: 400,
       status: "Error",
       body: "Api Key is not valid",
+    });
+  }
+});
+
+app.post("/impressions", async (req, res) => {
+  let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
+  const validation = await validateApiKey(apiKey);
+  if (validation) {
+    try {
+      const data = req.body;
+      let payload = {};
+      if (data.body != undefined) {
+        Object.assign(payload, { body: data.body });
+      }
+      if (data.author != undefined) {
+        Object.assign(payload, { author: data.author });
+      }
+      if (data.media != undefined) {
+        Object.assign(payload, { media: data.media });
+      }
+      if (data.lake != undefined) {
+        Object.assign(payload, { lake: data.lake });
+      }
+      Object.assign(payload, { date: moment() });
+      const newImpression = new Impression(payload);
+      const mongoRes = await newImpression.save();
+      if (mongoRes != null) {
+        await Lake.findOneAndUpdate(
+          { _id: data.lake },
+          { $push: { impressions: mongoRes.id } }
+        );
+        res.json({
+          code: 200,
+          status: "Success",
+          body: mongoRes,
+        });
+      }
+    } catch (err) {
+      res.json({
+        code: 402,
+        status: "Error",
+        message: err.message,
+      });
+    }
+  } else {
+    res.json({
+      code: 401,
+      status: "Error",
+      message: "Unauthorized",
+    });
+  }
+});
+
+app.patch("/impressions/:id", async (req, res) => {
+  let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
+  const validation = await validateApiKey(apiKey);
+  if (validation) {
+    try {
+      const impressionId = req.params.id;
+      const data = req.body;
+      let payload = {};
+      if (data.body != undefined) {
+        Object.assign(payload, { body: data.body });
+      }
+      if (data.author != undefined) {
+        Object.assign(payload, { author: data.author });
+      }
+      if (data.media != undefined) {
+        Object.assign(payload, { media: data.media });
+      }
+      const impressionUpdate = await Impression.findOneAndUpdate(
+        { _id: impressionId },
+        payload
+      );
+      if (impressionUpdate != null) {
+        res.json({
+          code: 200,
+          status: "Success",
+        });
+      } else {
+        res.json({
+          code: 401,
+          status: "Error",
+          body: "Impression not found",
+        });
+      }
+    } catch (err) {
+      res.json({
+        code: 402,
+        status: "Error",
+        message: err.message,
+      });
+    }
+  } else {
+    res.json({
+      code: 401,
+      status: "Error",
+      message: "Unauthorized",
+    });
+  }
+});
+
+app.get("/impressions", async (req, res) => {
+  let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
+  const validation = await validateApiKey(apiKey);
+  if (validation) {
+    try {
+      const query = req.query;
+      const lakeId = parseFloat(query.lake);
+      const mongoRes = await Lake.findOne({
+        id: lakeId,
+      });
+      console.log(mongoRes);
+      if (mongoRes != null) {
+        res.json({
+          code: 200,
+          status: "Success",
+          body: mongoRes.toJSON(),
+        });
+      } else {
+        res.json({
+          code: 401,
+          status: "Error",
+          body: "Impression not found",
+        });
+      }
+    } catch (err) {
+      res.json({
+        code: 402,
+        status: "Error",
+        message: err.message,
+      });
+    }
+  } else {
+    res.json({
+      code: 401,
+      status: "Error",
+      message: "Unauthorized",
     });
   }
 });
