@@ -34,12 +34,12 @@ app.get("/", (req, res) => {
   res.send("FishLakes server is live");
 });
 
-app.post(
-  "/developer",
-  createDeveloperLimiter,
-  validateDeveloperBody,
-  postDeveloper
-);
+// app.post(
+//   "/developer",
+//   createDeveloperLimiter,
+//   validateDeveloperBody,
+//   postDeveloper
+// );
 
 app.post("/lakes", async (req, res) => {
   let apiKey = req.headers["x-api-key"] || req.headers["X-API-Key"];
