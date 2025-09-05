@@ -1,5 +1,5 @@
 const UserRef = require("../../models/UserModel");
-const getlakes = require("../../services/LakeServices")
+const getLakes = require("../../services/LakeServices");
 
 const lakesRoutes = async (fastify) => {
   fastify.post("/", async (req, res) => {
@@ -11,16 +11,25 @@ const lakesRoutes = async (fastify) => {
 
         if (!userData.empty) {
           let region = req.body.region;
-          let lakesResult = await getlakes(region)
-          return { code: 200, body: lakesResult };
+          let lakesResult = await getLakes(region);
+          if (lakesResult.status == "Success") {
+            res.status(201);
+            res.send({ data: lakesResult.data });
+          } else {
+            res.status(402);
+            res.send({ error: lakesResult.msg });
+          }
         } else {
-          return { code: 401, msg: "Authorization not valid" };
+          res.status(401);
+          res.send({ msg: "Unauthorized, token not valid" });
         }
       } catch (err) {
-        return { code: 400, body: err };
+        res.status(400);
+        res.send({ error: err });
       }
     } else {
-      return { code: 401, msg: "Authorization not valid" };
+      res.status(401);
+      res.send({ msg: "Authorization not valid" });
     }
   });
 };
