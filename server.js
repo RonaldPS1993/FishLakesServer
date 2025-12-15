@@ -1,10 +1,17 @@
-require("dotenv").config();
+import "dotenv/config";
 
-const fastify = require("fastify")({
+import Fastify from "fastify";
+
+const fastify = Fastify({
   logger: false,
 });
+import { routes } from "./routes/index.js";
 
-fastify.register(require("./routes/index"), { prefix: "/api" });
+fastify.register(routes, { prefix: "/api" });
+await fastify.register(import("@fastify/rate-limit"), {
+  max: 25,
+  timeWindow: 1000 * 60,
+});
 
 const port = process.env.PORT || 3000;
 

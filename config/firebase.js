@@ -1,4 +1,4 @@
-var admin = require("firebase-admin");
+import admin from "firebase-admin";
 
 var serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_JSON);
 
@@ -11,4 +11,4 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const auth = admin.auth();
 
-module.exports = { admin, db, auth };
+export { db, auth };

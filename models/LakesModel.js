@@ -1,5 +1,5 @@
-const { db } = require("../config/firebase");
+import { db } from "../config/firebase.js";
 
-const UserCollectionRef = db.collection("Lakes");
+const LakesCollectionRef = db.collection("Lakes");
 
-module.exports = UserCollectionRef
+export { LakesCollectionRef };
