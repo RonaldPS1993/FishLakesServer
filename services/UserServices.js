@@ -1,4 +1,4 @@
-import { createUser, getUser } from "../modules/UserModules.js";
+import { createUser, getUserById } from "../modules/UserModules.js";
 import { auth } from "../config/firebase.js";
 
 const registerUser = async (data) => {
@@ -6,7 +6,7 @@ const registerUser = async (data) => {
     let payload = {};
     const fetchUser = await auth.verifyIdToken(data.token);
 
-    const getUserOnDb = await getUser({ id: fetchUser.uid });
+    const getUserOnDb = await getUserById({ id: fetchUser.uid });
 
     if (getUserOnDb.status == "Fail") {
       Object.assign(payload, { uid: fetchUser.uid });
@@ -18,10 +18,20 @@ const registerUser = async (data) => {
       }
       const newUser = await createUser(payload);
       return newUser;
+    } else {
+      return { status: "Error", msg: "User already exits." };
     }
   } catch (err) {
     return { status: "Error", msg: err };
   }
 };
 
-export { registerUser };
+const loginUser = async (data) => {
+  const fetchUser = await auth.verifyIdToken(data.token);
+
+  const checkUserOnDb = await getUserById({ id: fetchUser.uid });
+
+  return checkUserOnDb;
+};
+
+export { registerUser, loginUser };

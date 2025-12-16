@@ -13,16 +13,16 @@ const createUser = async (payload) => {
   }
 };
 
-const getUser = async (data) => {
+const getUserById = async (data) => {
   try {
     const fetchUser = await UserCollectionRef.where("uid", "==", data.id).get();
     if (fetchUser.empty) {
       return { status: "Fail", msg: "No user exits" };
     }
-    return { status: "Sucess", msg: "User found!" };
+    return { status: "Success", msg: "User found!" };
   } catch (err) {
     return { status: "Error", msg: err };
   }
 };
 
-export { createUser, getUser };
+export { createUser, getUserById };

@@ -6,12 +6,12 @@ const fastify = Fastify({
   logger: false,
 });
 import { routes } from "./routes/index.js";
-
-fastify.register(routes, { prefix: "/api" });
 await fastify.register(import("@fastify/rate-limit"), {
   max: 25,
   timeWindow: 1000 * 60,
 });
+
+fastify.register(routes, { prefix: "/api" });
 
 const port = process.env.PORT || 3000;
 
