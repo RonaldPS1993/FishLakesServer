@@ -18,7 +18,11 @@ const getLakes = async (latitude, longitude) => {
     const lakes = await LakesCollectionRef.where("latitude", "==", latitude)
       .where("longitude", "==", longitude)
       .get();
-    return { status: "Success", data: lakes.docs[0].data() };
+    if (!lakes.empty) {
+      return { status: "Success", data: lakes.docs[0].data() };
+    } else {
+      return { status: "Error", msg: "No lake found in database." };
+    }
   } catch (err) {
     return { status: "Error", msg: err };
   }

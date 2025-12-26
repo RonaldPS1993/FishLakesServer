@@ -1,4 +1,3 @@
-import { UserCollectionRef } from "../../models/UserModel.js";
 import { getNearbyLakes } from "../../services/LakeServices.js";
 
 const lakesRoutes = async (fastify) => {
@@ -7,15 +6,9 @@ const lakesRoutes = async (fastify) => {
       try {
         const userToken = req.headers["bearer"];
 
-        const userData = await UserCollectionRef.where(
-          "token",
-          "==",
-          userToken
-        ).get();
-
         if (!userData.empty) {
           let region = req.body.region;
-          let lakesResult = await getNearbyLakes(region);
+          let lakesResult = await getNearbyLakes(region, userToken);
           if (lakesResult.status == "Success") {
             res.status(201);
             res.send({ data: lakesResult.data });
