@@ -1,75 +1,83 @@
-import { createLake, getLakes } from "../modules/LakeModules.js";
+import { createLake, getLakeByName } from "../modules/LakeModules.js";
 import { auth } from "../config/firebase.js";
 import { UserCollectionRef } from "../models/UserModel.js";
+import { LakesCollectionRef } from "../models/LakesModel.js";
+import { buildTokens } from "../libs/buildSearchNames.js";
 
-const getNearbyLakes = async (region, token) => {
-  let radiusMeters = region.latitudeDelta * 69 * 1609.34;
-
+const searchLakeByName = async (lakeName, token) => {
   try {
-    const fetchUser = await auth.verifyIdToken(token);
+    //   const fetchUser = await auth.verifyIdToken(token);
 
-    const userDocs = await UserCollectionRef.where(
-      "uid",
-      "==",
-      fetchUser.uid
+    //   const userDocs = await UserCollectionRef.where(
+    //     "uid",
+    //     "==",
+    //     fetchUser.uid
+    //   ).get();
+
+    //   if (!userDocs.empty && userDocs.docs[0].data().role == "admin") {
+    const dbLake = await LakesCollectionRef.where(
+      "searchName",
+      "array-contains",
+      lakeName
     ).get();
+    if (dbLake.empty) {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      const url = "https://places.googleapis.com/v1/places:searchText";
 
-    if (!userDocs.empty && userDocs.docs[0].data().role == "admin") {
-      const lakesResult = [];
+      const requestBody = {
+        textQuery: lakeName,
+        maxResultCount: 5,
+      };
 
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?` +
-          `location=${region.latitude},${region.longitude}&` +
-          `radius=${radiusMeters}&` +
-          `type=natural_feature&` +
-          `keyword=lake&` +
-          `key=${process.env.GOOGLE_MAPS_API_KEY}`
-      );
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          // Define fields to avoid being billed for data you don't use
+          "X-Goog-FieldMask":
+            "places.displayName,places.formattedAddress,places.location,places.id,places.types",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       const data = await response.json();
 
-      for (const element of data.results) {
-        const lake = await getLakes(
-          element.geometry.location.lat,
-          element.geometry.location.lng
-        );
-        if (lake.status == "Success") {
-          lakesResult.push(lake.data);
-        } else {
-          let lakePayload = {};
-          Object.assign(lakePayload, {
-            latitude: element.geometry.location.lat,
+      let payload = {};
+
+      for (const element of data.places) {
+        if (element.types.includes("natural_feature")) {
+          Object.assign(payload, { location: element.location });
+          Object.assign(payload, { name: element.displayName.text });
+          const searchNames = await buildTokens(lakeName);
+          console.log(searchNames);
+          Object.assign(payload, { searchNames: searchNames });
+          Object.assign(payload, {
+            country: element.formattedAddress.split(",")[2].trim(),
           });
-          Object.assign(lakePayload, {
-            longitude: element.geometry.location.lng,
+          Object.assign(payload, {
+            state: element.formattedAddress.split(",")[1].trim(),
           });
-          Object.assign(lakePayload, { name: element.name });
-          Object.assign(lakePayload, { place_id: element.place_id });
-          Object.assign(lakePayload, { shore_fishing: false });
-          Object.assign(lakePayload, { vicinity: element.vicinity });
-          if (element.photos != undefined && element.photos.length > 0) {
-            let photoRef = element.photos[0].photo_reference;
-            const photoRes = await fetch(
-              `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoRef}&key=${process.env.GOOGLE_MAPS_API_KEY}`
-            );
-            Object.assign(lakePayload, { image: photoRes.url });
-            const addLakeRes = await createLake(lakePayload);
-            if (addLakeRes.status == "Success") {
-              lakesResult.push(lakePayload);
-              continue;
-            } else {
-              return { status: "Error", msg: addLakeRes.msg };
-            }
-          }
+          Object.assign(payload, {
+            createdAt: new Date(),
+          });
+          Object.assign(payload, { placeId: element.id });
+          break;
         }
       }
-    }
 
-    return { status: "Success", data: lakesResult };
+      console.log("Cycle done");
+
+      const newLake = await createLake(payload);
+      return newLake;
+    }
+    // }
+
+    // return { status: "Error", msg: "Auth error" };
   } catch (error) {
-    console.error("Error fetching nearby lakes:", error);
-    return [];
+    console.log("Error fetching lake:", error);
+    return { status: "Error", msg: error.message };
   }
 };
 
-export { getNearbyLakes };
+export { searchLakeByName };

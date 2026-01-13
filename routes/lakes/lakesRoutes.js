@@ -1,32 +1,20 @@
-import { getNearbyLakes } from "../../services/LakeServices.js";
+import { searchLakeByName } from "../../services/LakeServices.js";
 
 const lakesRoutes = async (fastify) => {
-  fastify.post("/", async (req, res) => {
+  fastify.get("/search", async (req, reply) => {
     if (req.headers["bearer"] != undefined) {
-      try {
-        const userToken = req.headers["bearer"];
+      const userToken = req.headers["bearer"];
+      const lakeName = req.query.name;
+      let lakesResult = await searchLakeByName(lakeName, userToken);
+      console.log("here");
 
-        if (!userData.empty) {
-          let region = req.body.region;
-          let lakesResult = await getNearbyLakes(region, userToken);
-          if (lakesResult.status == "Success") {
-            res.status(201);
-            res.send({ data: lakesResult.data });
-          } else {
-            res.status(402);
-            res.send({ error: lakesResult.msg });
-          }
-        } else {
-          res.status(401);
-          res.send({ msg: "Unauthorized, token not valid" });
-        }
-      } catch (err) {
-        res.status(400);
-        res.send({ error: err });
+      if (lakesResult.status == "Success") {
+        reply.code(201).send({ msg: lakesResult.msg, data: lakesResult.data });
+      } else {
+        reply.code(400).send({ msg: lakesResult.msg });
       }
     } else {
-      res.status(401);
-      res.send({ msg: "Authorization not valid" });
+      reply.code(401).send({ msg: "Authorization not valid" });
     }
   });
 };
