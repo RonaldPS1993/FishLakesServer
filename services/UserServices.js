@@ -1,15 +1,12 @@
-import { createUser, getUserById } from "../modules/UserModules.js";
-import { auth } from "../config/firebase.js";
+import { createUser, authenticateUser } from "../modules/UserModules.js";
 
 const registerUser = async (data) => {
   try {
     let payload = {};
-    const fetchUser = await auth.verifyIdToken(data.token);
+    const fetchUser = await authenticateUser(data.token);
 
-    const getUserOnDb = await getUserById({ id: fetchUser.uid });
-
-    if (getUserOnDb.status == "Fail") {
-      Object.assign(payload, { uid: fetchUser.uid });
+    if (fetchUser.status == "Error" && fetchUser.msg == "No user found on DB") {
+      Object.assign(payload, { uid: fetchUser.data.uid });
       Object.assign(payload, { createdAt: Date.now() });
       if (data.email == "admin@fishlakes.com") {
         Object.assign(payload, { role: "admin" });
@@ -27,11 +24,10 @@ const registerUser = async (data) => {
 };
 
 const loginUser = async (data) => {
-  const fetchUser = await auth.verifyIdToken(data.token);
 
-  const checkUserOnDb = await getUserById({ id: fetchUser.uid });
+  const authUser = await authenticateUser(data.token);
 
-  return checkUserOnDb;
+  return authUser;
 };
 
 export { registerUser, loginUser };

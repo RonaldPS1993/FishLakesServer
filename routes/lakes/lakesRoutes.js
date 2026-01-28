@@ -6,7 +6,6 @@ const lakesRoutes = async (fastify) => {
       const userToken = req.headers["bearer"];
       const lakeName = req.query.name;
       let lakesResult = await searchLakeByName(lakeName, userToken);
-      console.log("here");
 
       if (lakesResult.status == "Success") {
         reply.code(201).send({ msg: lakesResult.msg, data: lakesResult.data });

@@ -16,21 +16,23 @@ const createLake = async (payload) => {
 };
 
 const getLakeByName = async (searchName) => {
+
   try {
     const lakes = await LakesCollectionRef.where(
-      "searchName",
-      "==",
+      "searchNames",
+      "array-contains",
       searchName
     ).get();
     if (lakes.empty) {
       return { status: "Error", msg: "No lake found" };
-    } else {
-      return {
-        status: "Success",
-        data: lakes.docs[0].data(),
-        msg: "Lake added to database",
-      };
     }
+    let lakeData = lakes.docs[0].data();
+    Object.assign(lakeData, { id: lakes.docs[0].id });
+    return {
+      status: "Success",
+      data: lakeData,
+      msg: "Lake found in database",
+    };
   } catch (err) {
     return { status: "Error", msg: err };
   }
