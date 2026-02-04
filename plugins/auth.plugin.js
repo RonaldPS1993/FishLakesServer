@@ -50,4 +50,30 @@ const authPlugin = async (fastify) => {
     request.user = authResult.data;
     request.userExists = true;
   });
+
+  fastify.decorate("requireAdmin", async (request) => {
+    if (request.user === undefined) {
+      await fastify.verifyToken(request);
+    }
+
+    if (!request.userExists) {
+      throw new AuthenticationError("User not registered.");
+    }
+
+    if (request.user.role !== "admin") {
+      throw new AuthorizationError("Access denied. Admin role required.");
+    }
+  });
+
+  fastify.decorate("requireAuth", async (request) => {
+    if (request.user === undefined) {
+      await fastify.verifyToken(request);
+    }
+
+    if (!request.userExists) {
+      throw new AuthenticationError(
+        "User not registered. Please register first."
+      );
+    }
+  });
 };
