@@ -1,3 +1,4 @@
+import { NODE_ENV } from "../config/index.js";
 /**
  * Standardized Response Handler
  * Provides consistent response formats across the application
@@ -61,7 +62,7 @@ export const errorResponse = (
     code,
   };
   // Only include details in non-production environments
-  if (details && process.env.NODE_ENV !== "production") {
+  if (details && NODE_ENV !== "production") {
     response.details = details;
   }
   return response;

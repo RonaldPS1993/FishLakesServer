@@ -1,0 +1,21 @@
+import "dotenv/config";
+
+const PORT = process.env.PORT;
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
+const SERVICE_ACCOUNT_JSON = process.env.SERVICE_ACCOUNT_JSON;
+const NODE_ENV = process.env.NODE_ENV;
+const RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX;
+const RATE_LIMIT_TIME_WINDOW = process.env.RATE_LIMIT_TIME_WINDOW;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+
+export {
+  PORT,
+  GOOGLE_MAPS_API_KEY,
+  FIREBASE_PROJECT_ID,
+  SERVICE_ACCOUNT_JSON,
+  NODE_ENV,
+  RATE_LIMIT_MAX,
+  RATE_LIMIT_TIME_WINDOW,
+  ADMIN_EMAIL,
+};

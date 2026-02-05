@@ -1,8 +1,8 @@
-import "dotenv/config";
 import { buildApp } from "./app.js";
+import { PORT } from "./config/index.js";
 
 const fastify = await buildApp();
-const port = process.env.PORT || 3000;
+const port = PORT || 3000;
 
 const start = async () => {
   try {

@@ -1,4 +1,5 @@
 import { AppError, errorResponse, ErrorCode, HttpStatus } from "../utils/index";
+import { NODE_ENV } from "../config/index.js";
 
 const errorHandlerPlugin = async (fastify) => {
   // GLobal Error Handler
@@ -51,7 +52,7 @@ const errorHandlerPlugin = async (fastify) => {
     // Handle unexpected errors
     const statusCode = error.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
     const message =
-      process.env.NODE_ENV === "production"
+      NODE_ENV === "production"
         ? "An unexpected error occurred."
         : error.message;
     return reply

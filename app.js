@@ -1,10 +1,9 @@
 import Fastify from "fastify";
-import "dotenv/config";
 import { routes } from "./routes/index.js";
 import { registerPlugins } from "./plugins/index.js";
 
 const buildApp = async (opts = {}) => {
-  const fastify = Fastify({logger: true, ...opts});
+  const fastify = Fastify({ logger: true, ...opts });
 
   // Register plugins
   await registerPlugins(fastify);
@@ -14,4 +13,4 @@ const buildApp = async (opts = {}) => {
   return fastify;
 };
 
-export  {buildApp};
+export { buildApp };
