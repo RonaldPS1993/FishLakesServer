@@ -54,7 +54,7 @@ const fetchLakeFromGooglePlaces = async (lakeName) => {
     if (!response.ok) {
       return errorResponse(
         `Google Places API error: ${response.status}`,
-        ErrorCode.EXTERNAL_API_ERROR
+        ErrorCode.EXTERNAL_API_ERROR,
       );
     }
     const data = await response.json();
@@ -62,18 +62,18 @@ const fetchLakeFromGooglePlaces = async (lakeName) => {
     if (!data.places || data.places.length === 0) {
       return errorResponse(
         "No results found in Google Places",
-        ErrorCode.NOT_FOUND
+        ErrorCode.NOT_FOUND,
       );
     }
 
     const lakePlace = data.places.find((place) =>
-      place.types?.includes("natural_feature")
+      place.types?.includes("natural_feature"),
     );
 
     if (!lakePlace) {
       return errorResponse(
         "No lake found matching the search",
-        ErrorCode.NOT_FOUND
+        ErrorCode.NOT_FOUND,
       );
     }
 
@@ -96,74 +96,39 @@ const fetchLakeFromGooglePlaces = async (lakeName) => {
  */
 const searchLakeByName = async (lakeName, token) => {
   try {
-    const validUser = await authenticateUser(token);
-
-    if (validUser.status == "Success" && validUser.data.role == "admin") {
-      const dbLake = await getLakeByName(lakeName);
-      if (dbLake.msg == "No lake found") {
-        const url = "https://places.googleapis.com/v1/places:searchText";
-
-        const requestBody = {
-          textQuery: lakeName,
-          maxResultCount: 5,
-        };
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
-            // Define fields to avoid being billed for data you don't use
-            "X-Goog-FieldMask":
-              "places.displayName,places.formattedAddress,places.location,places.id,places.types",
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        const data = await response.json();
-
-        let payload = {};
-
-        for (const element of data.places) {
-          if (element.types.includes("natural_feature")) {
-            Object.assign(payload, { location: element.location });
-            Object.assign(payload, { name: element.displayName.text });
-            let nameStrings = element.displayName.text.split(" ");
-            for (let i = 0; i < nameStrings.length; i++) {
-              nameStrings[i] = nameStrings[i].toLowerCase();
-            }
-            const searchName = nameStrings.join(" ");
-            Object.assign(payload, { searchName: searchName });
-            Object.assign(payload, {
-              country: element.formattedAddress.split(",")[2].trim(),
-            });
-            Object.assign(payload, {
-              state: element.formattedAddress.split(",")[1].trim(),
-            });
-            Object.assign(payload, {
-              createdAt: new Date(),
-            });
-            Object.assign(payload, { placeId: element.id });
-            break;
-          }
-        }
-
-        console.log("Cycle done");
-
-        const newLake = await createLake(payload);
-        return newLake;
-      }
-      if (dbLake.status == "Success") {
-        console.log("Found lake");
-
-        return dbLake;
-      }
+    if (!lakeName || typeof lakeName !== "string" || !lakeName.trim()) {
+      return errorResponse("Invalid lake name", ErrorCode.VALIDATION_ERROR);
     }
 
-    return validUser;
+    const authResult = await authenticateUser(token);
+
+    if (authResult.status !== "Success") {
+      return errorResponse(
+        "Authentication failed",
+        ErrorCode.AUTHENTICATION_ERROR,
+      );
+    }
+
+    if (authResult.data.role !== "admin") {
+      return errorResponse(
+        "Access denied. Admin role required.",
+        ErrorCode.AUTHORIZATION_ERROR,
+      );
+    }
+
+    const dbLake = await getLakeByName(lakeName);
+
+    if (dbLake.status === "Success") {
+      return dbLake;
+    }
+
+    if (dbLake.code === ErrorCode.NOT_FOUND) {
+      return await fetchLakeFromGooglePlaces(lakeName);
+    }
+
+    return dbLake;
   } catch (error) {
-    console.log("Error fetching lake:", error);
-    return { status: "Error", msg: error.message };
+    return errorResponse(getErrorMessage(error), ErrorCode.INTERNAL_ERROR);
   }
 };
 
