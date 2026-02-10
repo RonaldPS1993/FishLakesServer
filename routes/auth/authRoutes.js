@@ -1,9 +1,34 @@
 import { registerUser, loginUser } from "../../services/UserServices.js";
+import {
+  authHeaderSchema,
+  registerUserSchema,
+  loginUserSchema,
+} from "../../schemas/index.js";
+import { sendResponse } from "../../utils/index.js";
 
+/**
+ * Extracts bearer token from Authorization header
+ * @param {string} authHeader - Authorization header value
+ * @returns {string} The token without "Bearer " prefix
+ */
+const extractToken = (authHeader) => {
+  return authHeader.replace(/^Bearer\s+/i, "");
+};
 const authRoutes = async (fastify) => {
+  /**
+   * POST /api/auth/register
+   * Registers a new user
+   *
+   * Headers: Authorization: Bearer <firebase_token>
+   * Body: { email: string }
+   */
   fastify.post(
     "/register",
     {
+      schema: {
+        headers: authHeaderSchema,
+        body: registerUserSchema,
+      },
       config: {
         rateLimit: {
           max: 5,
@@ -12,31 +37,30 @@ const authRoutes = async (fastify) => {
       },
     },
     async (req, reply) => {
-      if (req.headers["bearer"] != undefined) {
-        const userToken = req.headers["bearer"];
-        const data = req.body;
-
-        if (data.email != undefined) {
-          let payload = { token: userToken, email: data.email };
-          console.log(payload, "DATA");
-          const userSignup = await registerUser(payload);
-          if (userSignup.status == "Success") {
-            reply.code(200).send({ description: userSignup.msg });
-          } else {
-            reply.code(401).send({ description: userSignup.msg });
-          }
-        } else {
-          reply.code(400).send({ description: "The body is not valid" });
-        }
-      } else {
-        reply.code(401).send({ description: "Not valid headers." });
+      const payload = {
+        token: extractToken(req.headers.authorization),
+        email: req.body.email,
       }
-    }
+
+      const result  = await registerUser(payload);
+      sendResponse(reply, result);
+    },
   );
 
+   /**
+   * POST /api/auth/login
+   * Authenticates an existing user
+   * 
+   * Headers: Authorization: Bearer <firebase_token>
+   * Body: { email: string }
+   */
   fastify.post(
     "/login",
     {
+      schema: {
+        headers: authHeaderSchema,
+        body: loginUserSchema,
+      },
       config: {
         rateLimit: {
           max: 5,
@@ -45,24 +69,14 @@ const authRoutes = async (fastify) => {
       },
     },
     async (req, reply) => {
-      if (req.headers["bearer"] != undefined) {
-        const userToken = req.headers["bearer"];
-        const data = req.body;
-        if (data.email != undefined) {
-          let payload = { token: userToken, email: data.email };
-          console.log(payload);
-          const userLogin = await loginUser(payload);
-          if (userLogin.status == "Success") {
-            reply.code(200).send({ description: userLogin.msg });
-          } else {
-            reply.code(401).send({ description: userLogin.msg });
-          }
-        } else {
-          reply.code(400).send({ description: "The body is not valid" });
-        }
-      } else {
+      const payload = {
+        token: extractToken(req.headers.authorization),
+        email: req.body.email,
       }
-    }
+
+      const result = await loginUser(payload);
+      sendResponse(reply, result);
+    },
   );
 };
 

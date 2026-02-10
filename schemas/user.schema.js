@@ -2,9 +2,8 @@ export const registerUserSchema = {
   type: "object",
   properties: {
     email: { type: "string", format: "email" },
-    password: { type: "string", minLength: 8 },
   },
-  required: ["email", "password"],
+  required: ["email"],
   additionalProperties: false,
 };
 
@@ -12,9 +11,8 @@ export const loginUserSchema = {
   type: "object",
   properties: {
     email: { type: "string", format: "email" },
-    password: { type: "string", minLength: 8 },
   },
-  required: ["email", "password"],
+  required: ["email"],
   additionalProperties: false,
 };
 

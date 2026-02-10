@@ -1,4 +1,9 @@
-import { AppError, errorResponse, ErrorCode, HttpStatus } from "../utils/index";
+import {
+  AppError,
+  errorResponse,
+  ErrorCode,
+  HttpStatus,
+} from "../utils/index.js";
 import { NODE_ENV } from "../config/index.js";
 
 const errorHandlerPlugin = async (fastify) => {
@@ -22,7 +27,7 @@ const errorHandlerPlugin = async (fastify) => {
       return reply
         .code(HttpStatus.BAD_REQUEST)
         .send(
-          errorResponse(message, ErrorCode.VALIDATION_ERROR, error.validation)
+          errorResponse(message, ErrorCode.VALIDATION_ERROR, error.validation),
         );
     }
 
@@ -31,7 +36,7 @@ const errorHandlerPlugin = async (fastify) => {
       return reply
         .code(429)
         .send(
-          errorResponse("Too many requests. Please try again later.", "429")
+          errorResponse("Too many requests. Please try again later.", "429"),
         );
     }
 

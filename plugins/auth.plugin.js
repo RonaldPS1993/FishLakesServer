@@ -32,7 +32,7 @@ const authPlugin = async (fastify) => {
 
     if (!token) {
       throw new AuthenticationError(
-        "Authorization header required. Format: Bearer <token>"
+        "Authorization header required. Format: Bearer <token>",
       );
     }
 
@@ -43,7 +43,7 @@ const authPlugin = async (fastify) => {
         request.userExists = false;
       }
       throw new AuthenticationError(
-        authResult.message || "Authentication failed"
+        authResult.message || "Authentication failed",
       );
     }
 
@@ -72,8 +72,10 @@ const authPlugin = async (fastify) => {
 
     if (!request.userExists) {
       throw new AuthenticationError(
-        "User not registered. Please register first."
+        "User not registered. Please register first.",
       );
     }
   });
 };
+
+export { authPlugin };
