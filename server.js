@@ -6,7 +6,7 @@ const port = PORT || 3000;
 
 const start = async () => {
   try {
-    fastify.listen({ port, host: "0.0.0.0" });
+    await fastify.listen({ port, host: "0.0.0.0" });
     console.log(`Server is now listening on ${port}`);
   } catch (err) {
     console.error(err);
