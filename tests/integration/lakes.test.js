@@ -63,4 +63,61 @@ describe("Lakes Endpoints", () => {
       expect(res.statusCode).not.toBe(400);
     });
   });
+
+
+  describe("GET /api/lakes/getNearbyLakes", () => {
+    it("returns 400 without authorization header", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/lakes/getNearbyLakes?latitude=37.774929&longitude=-122.419416&radius=1000",
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
+    });
+
+    it("returns 400 without latitude query param", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/lakes/getNearbyLakes?longitude=-122.419416&radius=1000",
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
+    });
+
+    it("returns 400 without longitude query param", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/lakes/getNearbyLakes?latitude=37.774929&radius=1000",
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
+    });
+
+    it("returns 400 without radius query param", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/lakes/getNearbyLakes?latitude=37.774929&longitude=-122.419416",
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
+    });
+
+    it("accepts valid request (schema passes validation)", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/lakes/getNearbyLakes?latitude=37.774929&longitude=-122.419416&radius=1000",
+        headers: {
+          authorization: validAuth,
+        },
+      });
+
+      expect(res.statusCode).not.toBe(400);
+    });
+
+
+  });
 });

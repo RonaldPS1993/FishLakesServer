@@ -1,7 +1,8 @@
-import { searchLakeByName } from "../../services/LakeServices.js";
+import { searchLakeByName, getNearbyLakes } from "../../services/LakeServices.js";
 import {
   authHeaderSchema,
   searchLakeByNameSchema,
+  getNearbyLakesSchema
 } from "../../schemas/index.js";
 import { sendResponse } from "../../utils/index.js";
 
@@ -43,5 +44,36 @@ const lakesRoutes = async (fastify) => {
       sendResponse(reply, result);
     },
   );
+
+  /**
+   * GET /api/lakes/getNearbyLakes
+   * Gets nearby lakes by latitude and longitude
+   * Requires admin authentication
+   *
+   * Headers: Authorization: Bearer <firebase_token>
+   * Query: latitude=<latitude>
+   * Query: longitude=<longitude>
+   * Query: radius=<radius>
+   */
+  fastify.get("/getNearbyLakes", {
+    schema: {
+      headers: authHeaderSchema,
+      query: getNearbyLakesSchema,
+    },
+    config: {
+      rateLimit: {
+        max: 20,
+        timeWindow: 1000 * 60,
+      },
+    },
+  },
+  async (req, reply) => {
+    const token = extractToken(req.headers.authorization);
+    const result = await getNearbyLakes(req.query.latitude, req.query.longitude, req.query.radius, token);
+    sendResponse(reply, result);
+  },
+);
 };
+
+
 export { lakesRoutes };

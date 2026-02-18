@@ -132,4 +132,87 @@ const searchLakeByName = async (lakeName, token) => {
   }
 };
 
-export { searchLakeByName };
+/**
+ * Gets nearby lakes by latitude and longitude
+ * @param {number} latitude - Latitude of the location
+ * @param {number} longitude - Longitude of the location
+ * @param {number} radius - Radius in meters
+ * @returns {Promise<object>} Standardized response
+ */
+const getLakesByLocation = async (latitude, longitude, radius) => {
+  try {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/place/nearbysearch/json?` +
+        `location=${latitude},${longitude}&` +
+        `radius=${radius}&` +
+        `type=natural_feature&` +
+        `keyword=lake&` +
+        `key=${GOOGLE_MAPS_API_KEY}`,
+    );
+
+    const data = await response.json();
+
+    if (data.status === "OK") {
+      return successResponse("Nearby lakes fetched successfully", data.results);
+    } else {
+      return errorResponse(
+        "Failed to fetch nearby lakes",
+        ErrorCode.EXTERNAL_API_ERROR,
+      );
+    }
+  } catch (error) {
+    return errorResponse(getErrorMessage(error), ErrorCode.INTERNAL_ERROR);
+  }
+};
+
+/**
+ * Gets nearby lakes by latitude and longitude
+ * First checks database, then falls back to Google Places API
+ * Requires admin authentication
+ * @param {number} latitude - Latitude of the location
+ * @param {number} longitude - Longitude of the location
+ * @param {number} radius - Radius in meters
+ * @param {string} token - Firebase auth token
+ * @returns {Promise<object>} Standardized response
+ */
+const getNearbyLakes = async (latitude, longitude, radius, token) => {
+  try {
+    if (
+      !latitude ||
+      typeof latitude !== "number" ||
+      !longitude ||
+      typeof longitude !== "number" ||
+      !radius ||
+      typeof radius !== "number"
+    ) {
+      return errorResponse(
+        "Invalid query parameters",
+        ErrorCode.VALIDATION_ERROR,
+      );
+    }
+
+    const authResult = await authenticateUser(token);
+
+    if (authResult.status !== "Success") {
+      return errorResponse(
+        "Authentication failed",
+        ErrorCode.AUTHENTICATION_ERROR,
+      );
+    }
+
+    if (authResult.data.role !== "admin") {
+      return errorResponse(
+        "Access denied. Admin role required.",
+        ErrorCode.AUTHORIZATION_ERROR,
+      );
+    }
+
+    const lakes = await getLakesByLocation(latitude, longitude, radius);
+
+    return lakes;
+  } catch (error) {
+    return errorResponse(getErrorMessage(error), ErrorCode.INTERNAL_ERROR);
+  }
+};
+
+export { searchLakeByName, getNearbyLakes };

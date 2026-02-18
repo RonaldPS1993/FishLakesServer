@@ -6,6 +6,16 @@ export const searchLakeByNameSchema = {
   required: ["name"],
 };
 
+export const getNearbyLakesSchema = {
+  type: "object",
+  properties: {
+    latitude: { type: "number" },
+    longitude: { type: "number" },
+    radius: { type: "number" },
+  },
+  required: ["latitude", "longitude", "radius"],
+};
+
 export const lakeDataSchema = {
     type: "object",
     properties: {
