@@ -9,53 +9,17 @@ export const searchLakeByNameSchema = {
 export const getNearbyLakesSchema = {
   type: "object",
   properties: {
-    latitude: { type: "number" },
-    longitude: { type: "number" },
-    radius: { type: "number" },
+    lat: { type: "number", minimum: -90, maximum: 90 },
+    lng: { type: "number", minimum: -180, maximum: 180 },
+    radius: { type: "number", minimum: 1, maximum: 200000, default: 50000 },
   },
-  required: ["latitude", "longitude", "radius"],
+  required: ["lat", "lng"],
 };
 
-export const lakeDataSchema = {
-    type: "object",
-    properties: {
-        id: { type: "string" },
-        placeId: { type: "string" },
-        searchName: { type: "string" },
-        name: { type: "string" },
-        location: { type: "object" },
-        country: { type: "string", minLength: 1, maxLength: 200 },
-        state: { type: "string", minLength: 1, maxLength: 200 },
-        createdAt: { type: "timestamp" },
-    },
-    required: ["id", "placeId", "name", "location", "country", "state", "createdAt"],
-    additionalProperties: false,
-}
-
-export const createLakeBodySchema = {
+export const getLakeDetailSchema = {
   type: "object",
-  required: ["name", "location"],
   properties: {
-    name: { type: "string", minLength: 1, maxLength: 200 },
-    location: { 
-      type: "object",
-      properties: {
-        latitude: { type: "number" },
-        longitude: { type: "number" },
-      },
-      required: ["latitude", "longitude"],
-      additionalProperties: false,
-    },
-    country: { type: "string", minLength: 1, maxLength: 200 },
-    state: { type: "string", minLength: 1, maxLength: 200 },
-    createdAt: { type: "timestamp" },
-    placeId: { type: "string" },
-    searchName: { type: "string", minLength: 1, maxLength: 200 },
+    id: { type: "integer", minimum: 1 },
   },
-  required: ["name", "location", "country", "state", "createdAt", "placeId"],
-  additionalProperties: false,
-}
-
-
-
-
+  required: ["id"],
+};

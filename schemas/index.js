@@ -7,9 +7,8 @@ export {
 
 export {
   searchLakeByNameSchema,
-  lakeDataSchema,
   getNearbyLakesSchema,
-  createLakeBodySchema,
+  getLakeDetailSchema,
 } from "./lake.schema.js";
 
 export {

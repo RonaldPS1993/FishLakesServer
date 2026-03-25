@@ -1,29 +1,26 @@
+// Register needs no body -- JWT provides email
 export const registerUserSchema = {
   type: "object",
-  properties: {
-    email: { type: "string", format: "email" },
-  },
-  required: ["email"],
-  additionalProperties: false,
+  nullable: true,
+  additionalProperties: true,
 };
 
+// Login needs no body -- JWT provides identity
 export const loginUserSchema = {
   type: "object",
-  properties: {
-    email: { type: "string", format: "email" },
-  },
-  required: ["email"],
-  additionalProperties: false,
+  nullable: true,
+  additionalProperties: true,
 };
 
+// Updated to match profiles table columns
 export const userDataSchema = {
   type: "object",
   properties: {
-    uid: { type: "string" },
-    email: { type: "string", format: "email" },
+    id: { type: "string", format: "uuid" },
+    username: { type: "string" },
     role: { type: "string", enum: ["admin", "user"] },
-    createdAt: { type: "number" },
+    created_at: { type: "string" },
+    updated_at: { type: "string" },
   },
-  required: ["uid", "email", "role", "createdAt"],
-  additionalProperties: false,
+  required: ["id", "username", "role"],
 };

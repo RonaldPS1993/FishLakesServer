@@ -1,48 +1,86 @@
-import { LakesCollectionRef } from "../models/LakesModel.js";
-import { getErrorMessage, ErrorCode, successResponse, errorResponse } from "../utils/index.js";
+import { supabaseAdmin } from "../config/supabase.js";
+import {
+  getErrorMessage,
+  ErrorCode,
+  successResponse,
+  errorResponse,
+} from "../utils/index.js";
 
 /**
- * Creates a new lake in the database
- * @param {object} payload - Lake data to store
+ * Gets a lake by HydroLakes ID from the hydrolakes table
+ * @param {number} hylakId - HydroLakes unique ID
  * @returns {Promise<object>} Standardized response
  */
-const createLake = async (payload) => {
+const getLakeById = async (hylakId) => {
   try {
-    const lakeCreated = await LakesCollectionRef.add(payload);
-    if (!lakeCreated.id) {
-      return errorResponse("Error adding lake to DB", ErrorCode.DATABASE_ERROR);
-    } 
-    const responseData = { ...payload, id: lakeCreated.id };
-    return successResponse("Lake added to DB", responseData);
-  } catch (err) {
-    return errorResponse(getErrorMessage(err), ErrorCode.DATABASE_ERROR);
-  }
-};
+    const { data, error } = await supabaseAdmin
+      .from("hydrolakes")
+      .select("hylak_id, lake_name, pour_lat, pour_long, lake_area, depth_avg, country")
+      .eq("hylak_id", hylakId)
+      .maybeSingle();
 
-/**
- * Finds a lake by search name
- * @param {string} searchName - Name to search for
- * @returns {Promise<object>} Standardized response
- */
-
-const getLakeByName = async (searchName) => {
-
-  try {
-    const normalizedSearchName = searchName.toLowerCase().trim();
-    const lakes = await LakesCollectionRef.where(
-      "searchName",
-      "==",
-      normalizedSearchName
-    ).get();
-    if (lakes.empty) {
-      return errorResponse("No lake found", ErrorCode.NOT_FOUND);
+    if (error) {
+      return errorResponse(error.message, ErrorCode.DATABASE_ERROR);
     }
-    
-    const lakeData = {...lakes.docs[0].data(), id: lakes.docs[0].id};
-    return successResponse("Lake found in database", lakeData);
+
+    if (!data) {
+      return errorResponse("Lake not found", ErrorCode.NOT_FOUND);
+    }
+
+    return successResponse("Lake found", data);
   } catch (err) {
     return errorResponse(getErrorMessage(err), ErrorCode.DATABASE_ERROR);
   }
 };
 
-export { createLake, getLakeByName };
+/**
+ * Gets cached lake photo from lake_photos table
+ * @param {number} hylakId - HydroLakes unique ID
+ * @returns {Promise<object>} Standardized response
+ */
+const getCachedLake = async (hylakId) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("lake_photos")
+      .select("*")
+      .eq("hylak_id", hylakId)
+      .maybeSingle();
+
+    if (error) {
+      return errorResponse(error.message, ErrorCode.DATABASE_ERROR);
+    }
+
+    if (!data) {
+      return errorResponse("No cached photo found", ErrorCode.NOT_FOUND);
+    }
+
+    return successResponse("Cached lake photo found", data);
+  } catch (err) {
+    return errorResponse(getErrorMessage(err), ErrorCode.DATABASE_ERROR);
+  }
+};
+
+/**
+ * Creates a cached lake photo entry in lake_photos table
+ * @param {object} payload - Lake photo data { hylak_id, photo_url, photo_source }
+ * @returns {Promise<object>} Standardized response
+ */
+const createCachedLake = async (payload) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("lake_photos")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      return errorResponse(error.message, ErrorCode.DATABASE_ERROR);
+    }
+
+    return successResponse("Lake photo cached", data);
+  } catch (err) {
+    return errorResponse(getErrorMessage(err), ErrorCode.DATABASE_ERROR);
+  }
+};
+
+export { getLakeById, getCachedLake, createCachedLake };

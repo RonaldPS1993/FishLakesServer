@@ -9,7 +9,7 @@ import { ADMIN_EMAIL } from "../config/index.js";
 
 /**
  * Registers a new user
- * @param {object} data - Registration data { token, email }
+ * @param {object} data - Registration data { token }
  * @returns {Promise<object>} Standardized response
  */
 const registerUser = async (data) => {
@@ -24,8 +24,8 @@ const registerUser = async (data) => {
       return authResult;
     }
 
-    const firebaseUser = authResult.details?.firebaseUser;
-    if (!firebaseUser || !firebaseUser.uid) {
+    const supabaseUser = authResult.details?.supabaseUser;
+    if (!supabaseUser || !supabaseUser.id) {
       return errorResponse(
         "Invalid authentication token",
         ErrorCode.AUTHENTICATION_ERROR
@@ -33,10 +33,9 @@ const registerUser = async (data) => {
     }
 
     const payload = {
-      uid: firebaseUser.uid,
-      email: data.email,
-      role: data.email === ADMIN_EMAIL ? "admin" : "user",
-      createdAt: Date.now(),
+      id: supabaseUser.id,
+      username: supabaseUser.email,
+      role: supabaseUser.email === ADMIN_EMAIL ? "admin" : "user",
     };
 
     const newUser = await createUser(payload);
@@ -48,7 +47,7 @@ const registerUser = async (data) => {
 
 /**
  * Logs in an existing user
- * @param {object} data - Login data { token, email }
+ * @param {object} data - Login data { token }
  * @returns {Promise<object>} Standardized response
  */
 const loginUser = async (data) => {
