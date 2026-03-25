@@ -4,23 +4,15 @@ import {
   registerUserSchema,
   loginUserSchema,
 } from "../../schemas/index.js";
-import { sendResponse } from "../../utils/index.js";
+import { extractToken, sendResponse } from "../../utils/index.js";
 
-/**
- * Extracts bearer token from Authorization header
- * @param {string} authHeader - Authorization header value
- * @returns {string} The token without "Bearer " prefix
- */
-const extractToken = (authHeader) => {
-  return authHeader.replace(/^Bearer\s+/i, "");
-};
 const authRoutes = async (fastify) => {
   /**
    * POST /api/auth/register
    * Registers a new user
    *
-   * Headers: Authorization: Bearer <firebase_token>
-   * Body: { email: string }
+   * Headers: Authorization: Bearer <supabase_token>
+   * Body: none required -- email extracted from JWT
    */
   fastify.post(
     "/register",
@@ -39,20 +31,19 @@ const authRoutes = async (fastify) => {
     async (req, reply) => {
       const payload = {
         token: extractToken(req.headers.authorization),
-        email: req.body.email,
-      }
+      };
 
-      const result  = await registerUser(payload);
+      const result = await registerUser(payload);
       sendResponse(reply, result);
     },
   );
 
-   /**
+  /**
    * POST /api/auth/login
    * Authenticates an existing user
-   * 
-   * Headers: Authorization: Bearer <firebase_token>
-   * Body: { email: string }
+   *
+   * Headers: Authorization: Bearer <supabase_token>
+   * Body: none required -- identity from JWT
    */
   fastify.post(
     "/login",
@@ -71,8 +62,7 @@ const authRoutes = async (fastify) => {
     async (req, reply) => {
       const payload = {
         token: extractToken(req.headers.authorization),
-        email: req.body.email,
-      }
+      };
 
       const result = await loginUser(payload);
       sendResponse(reply, result);

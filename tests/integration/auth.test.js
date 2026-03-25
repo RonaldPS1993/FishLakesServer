@@ -2,6 +2,8 @@ import { buildTestApp } from "../helpers/testApp.js";
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
 import { validAuth, mockAdmin, mockUser } from "../helpers/fixtures.js";
 
+// Email extracted from JWT by server, not from request body (D-11, D-13)
+
 describe("Auth Endpoints", () => {
   let app;
   beforeAll(async () => {
@@ -18,9 +20,6 @@ describe("Auth Endpoints", () => {
       const res = await app.inject({
         method: "POST",
         url: "/api/auth/register",
-        payload: {
-          email: "test@test.com",
-        },
       });
 
       expect(res.statusCode).toBe(400);
@@ -34,38 +33,6 @@ describe("Auth Endpoints", () => {
         headers: {
           authorization: "invalid-format",
         },
-        payload: {
-          email: "test@test.com",
-        },
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("returns 400 with missing email", async () => {
-      const res = await app.inject({
-        method: "POST",
-        url: "/api/auth/register",
-        headers: {
-          authorization: validAuth,
-        },
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("returns 400 with invalid email", async () => {
-      const res = await app.inject({
-        method: "POST",
-        url: "/api/auth/register",
-        headers: {
-          authorization: validAuth,
-        },
-        payload: {
-          email: "invalid-email",
-        },
       });
 
       expect(res.statusCode).toBe(400);
@@ -78,9 +45,6 @@ describe("Auth Endpoints", () => {
         url: "/api/auth/register",
         headers: {
           authorization: validAuth,
-        },
-        payload: {
-          email: "test@test.com",
         },
       });
 
@@ -93,22 +57,6 @@ describe("Auth Endpoints", () => {
       const res = await app.inject({
         method: "POST",
         url: "/api/auth/login",
-        payload: {
-          email: "test@test.com",
-        },
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("returns 400 without email", async () => {
-      const res = await app.inject({
-        method: "POST",
-        url: "/api/auth/login",
-        headers: {
-          authorization: validAuth,
-        },
       });
 
       expect(res.statusCode).toBe(400);
@@ -121,9 +69,6 @@ describe("Auth Endpoints", () => {
         url: "/api/auth/login",
         headers: {
           authorization: validAuth,
-        },
-        payload: {
-          email: "test@test.com",
         },
       });
 

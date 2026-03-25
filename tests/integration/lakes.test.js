@@ -14,21 +14,21 @@ describe("Lakes Endpoints", () => {
     await app.close();
   });
 
-  describe("GET /api/lakes/search", () => {
+  describe("GET /api/lakes/nearby", () => {
     it("returns 400 without authorization header", async () => {
       const res = await app.inject({
         method: "GET",
-        url: "/api/lakes/search?name=Test lake",
+        url: "/api/lakes/nearby?lat=37.774929&lng=-122.419416&radius=1000",
       });
 
       expect(res.statusCode).toBe(400);
       expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
     });
 
-    it("returns 400 without name query param", async () => {
+    it("returns 400 without lat query param", async () => {
       const res = await app.inject({
         method: "GET",
-        url: "/api/lakes/search",
+        url: "/api/lakes/nearby?lng=-122.419416&radius=1000",
         headers: {
           authorization: validAuth,
         },
@@ -38,10 +38,10 @@ describe("Lakes Endpoints", () => {
       expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
     });
 
-    it("returns 400 with empty name query param", async () => {
+    it("returns 400 without lng query param", async () => {
       const res = await app.inject({
         method: "GET",
-        url: "/api/lakes/search?name=",
+        url: "/api/lakes/nearby?lat=37.774929&radius=1000",
         headers: {
           authorization: validAuth,
         },
@@ -54,7 +54,7 @@ describe("Lakes Endpoints", () => {
     it("accepts valid request (schema passes validation)", async () => {
       const res = await app.inject({
         method: "GET",
-        url: "/api/lakes/search?name=Test lake",
+        url: "/api/lakes/nearby?lat=37.774929&lng=-122.419416&radius=1000",
         headers: {
           authorization: validAuth,
         },
@@ -64,60 +64,17 @@ describe("Lakes Endpoints", () => {
     });
   });
 
-
-  describe("GET /api/lakes/getNearbyLakes", () => {
-    it("returns 400 without authorization header", async () => {
+  describe("GET /api/lakes/:id", () => {
+    it("returns 400 with non-numeric id", async () => {
       const res = await app.inject({
         method: "GET",
-        url: "/api/lakes/getNearbyLakes?latitude=37.774929&longitude=-122.419416&radius=1000",
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("returns 400 without latitude query param", async () => {
-      const res = await app.inject({
-        method: "GET",
-        url: "/api/lakes/getNearbyLakes?longitude=-122.419416&radius=1000",
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("returns 400 without longitude query param", async () => {
-      const res = await app.inject({
-        method: "GET",
-        url: "/api/lakes/getNearbyLakes?latitude=37.774929&radius=1000",
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("returns 400 without radius query param", async () => {
-      const res = await app.inject({
-        method: "GET",
-        url: "/api/lakes/getNearbyLakes?latitude=37.774929&longitude=-122.419416",
-      });
-
-      expect(res.statusCode).toBe(400);
-      expect(JSON.parse(res.body).code).toBe("FST_ERR_VALIDATION");
-    });
-
-    it("accepts valid request (schema passes validation)", async () => {
-      const res = await app.inject({
-        method: "GET",
-        url: "/api/lakes/getNearbyLakes?latitude=37.774929&longitude=-122.419416&radius=1000",
+        url: "/api/lakes/abc",
         headers: {
           authorization: validAuth,
         },
       });
 
-      expect(res.statusCode).not.toBe(400);
+      expect(res.statusCode).toBe(400);
     });
-
-
   });
 });

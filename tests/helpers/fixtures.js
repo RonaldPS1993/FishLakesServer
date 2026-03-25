@@ -5,17 +5,17 @@
 export const validAuth = "Bearer valid-test-token";
 
 export const mockAdmin = {
-    id: "admin-123",
-    uid: "firebase-admin-uid",
-    email: "admin@fishlakes.com",
-    role: "admin",
-    createdAt: Date.now(),
-}
+  id: "admin-123",
+  username: "admin@fishlakes.com",
+  role: "admin",
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
 
 export const mockUser = {
-    id: "user-123",
-    uid: "firebase-user-uid",
-    email: "user@example.com",
-    role: "user",
-    createdAt: Date.now(),
-}
+  id: "user-123",
+  username: "user@example.com",
+  role: "user",
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};

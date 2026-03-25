@@ -23,7 +23,7 @@ const extractBearerToken = (authHeader) => {
 
 const authPlugin = async (fastify) => {
   /**
-   * Decorator to verify Firebase token and attach user to request
+   * Decorator to verify Supabase token and attach user to request
    * Usage: { preHandler: [fastify.verifyToken] }
    */
   fastify.decorate("verifyToken", async (request) => {
@@ -39,7 +39,7 @@ const authPlugin = async (fastify) => {
     const authResult = await authenticateUser(token);
     if (authResult.status === "Error") {
       if (authResult.code === ErrorCode.NOT_FOUND) {
-        request.user = authResult.details?.firebaseUser || null;
+        request.user = authResult.details?.supabaseUser || null;
         request.userExists = false;
       }
       throw new AuthenticationError(

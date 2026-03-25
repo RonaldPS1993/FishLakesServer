@@ -18,3 +18,5 @@ export {
   getHttpStatusFromErrorCode,
   sendResponse,
 } from "./responseHandler.js";
+
+export { extractToken } from "./extractToken.js";
