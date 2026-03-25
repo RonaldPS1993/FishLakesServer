@@ -77,4 +77,26 @@ describe("Lakes Endpoints", () => {
       expect(res.statusCode).toBe(400);
     });
   });
+
+  describe("POST /api/lakes/:id/favorite", () => {
+    it("returns 400 without authorization header", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/lakes/123/favorite",
+      });
+
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe("DELETE /api/lakes/:id/favorite", () => {
+    it("returns 400 without authorization header", async () => {
+      const res = await app.inject({
+        method: "DELETE",
+        url: "/api/lakes/123/favorite",
+      });
+
+      expect(res.statusCode).toBe(400);
+    });
+  });
 });

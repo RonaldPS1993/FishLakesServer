@@ -1,4 +1,4 @@
-import { getNearbyLakes, getLakeDetail } from "../../services/LakeServices.js";
+import { getNearbyLakes, getLakeDetail, addFavorite, removeFavorite } from "../../services/LakeServices.js";
 import {
   authHeaderSchema,
   getNearbyLakesSchema,
@@ -59,6 +59,50 @@ const lakesRoutes = async (fastify) => {
     },
     async (req, reply) => {
       const result = await getLakeDetail(parseInt(req.params.id));
+      sendResponse(reply, result);
+    },
+  );
+
+  /**
+   * POST /api/lakes/:id/favorite
+   * Sets a lake as the authenticated user's favorite
+   *
+   * Headers: Authorization: Bearer <supabase_token>
+   * Params: id=<hylak_id>
+   */
+  fastify.post(
+    "/:id/favorite",
+    {
+      schema: {
+        headers: authHeaderSchema,
+        params: getLakeDetailSchema,
+      },
+      preHandler: [fastify.requireAuth],
+    },
+    async (req, reply) => {
+      const result = await addFavorite(req.user.id, parseInt(req.params.id));
+      sendResponse(reply, result);
+    },
+  );
+
+  /**
+   * DELETE /api/lakes/:id/favorite
+   * Removes the authenticated user's favorite lake
+   *
+   * Headers: Authorization: Bearer <supabase_token>
+   * Params: id=<hylak_id>
+   */
+  fastify.delete(
+    "/:id/favorite",
+    {
+      schema: {
+        headers: authHeaderSchema,
+        params: getLakeDetailSchema,
+      },
+      preHandler: [fastify.requireAuth],
+    },
+    async (req, reply) => {
+      const result = await removeFavorite(req.user.id);
       sendResponse(reply, result);
     },
   );
