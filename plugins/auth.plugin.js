@@ -1,3 +1,4 @@
+import fp from "fastify-plugin";
 import { authenticateUser } from "../modules/UserModules.js";
 import {
   AuthenticationError,
@@ -21,7 +22,7 @@ const extractBearerToken = (authHeader) => {
   return parts[1];
 };
 
-const authPlugin = async (fastify) => {
+const authPlugin = fp(async (fastify) => {
   /**
    * Decorator to verify Supabase token and attach user to request
    * Usage: { preHandler: [fastify.verifyToken] }
@@ -76,6 +77,6 @@ const authPlugin = async (fastify) => {
       );
     }
   });
-};
+});
 
 export { authPlugin };
