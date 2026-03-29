@@ -40,8 +40,11 @@ const authPlugin = fp(async (fastify) => {
     const authResult = await authenticateUser(token);
     if (authResult.status === "Error") {
       if (authResult.code === ErrorCode.NOT_FOUND) {
+        // JWT is valid but no profile row exists yet — let the route decide what to do.
+        // requireAuth and requireAdmin will block these requests; verifyToken allows through.
         request.user = authResult.details?.supabaseUser || null;
         request.userExists = false;
+        return;
       }
       throw new AuthenticationError(
         authResult.message || "Authentication failed",
